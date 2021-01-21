@@ -1,0 +1,10 @@
+hydra:
+  run:
+    dir: ${data_root_dir}/${tag}/${now:%Y-%m-%d_%H-%M-%S}/
+
+data_root_dir: /home/jacky/ws/data-learning-boilerplate/outs/generate_data
+
+tag: default
+save_every: 100
+seed: 0
+n_samples: 1000
