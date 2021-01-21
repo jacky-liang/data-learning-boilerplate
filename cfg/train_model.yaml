@@ -1,0 +1,37 @@
+hydra:
+  run:
+    dir: ${root_dir}/train_model/${tag}/${now:%Y-%m-%d_%H-%M-%S}/
+
+root_dir: /home/jacky/ws/data-learning-boilerplate/outs
+
+tag: default
+seed: 0
+
+wandb:
+  logger:
+    entity: jackyliang
+    project: data_learning_boilerplate
+    group: jacky/train_model
+    tags: []
+    offline: False
+  saver:
+    upload: True
+    monitor: 'val/loss'
+
+data:
+  test_size: 0.2
+  rel_data_dir: generate_data
+  tags:
+    - s0
+    - s1
+    - s2
+    - s3
+    - s4
+
+train: 
+  x_dim: 2
+  y_dim: 2
+  arch: [32, 32]
+  lr: 1e-2
+  batch_size: 32
+  max_epochs: 200

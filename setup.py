@@ -9,7 +9,8 @@ setup(name='data-learning-boilerplate',
             'wandb',
             'pytorch_lightning',
             'async-savers',
-            'tqdm'
+            'tqdm',
+            'scikit-learn'
       ],
       description='A boilerplate for data generating and learning projects',
       author='Jacky Liang',

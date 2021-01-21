@@ -14,7 +14,7 @@ def main(cfg):
     set_seed(cfg['seed'])
 
     hydra_dir = os.getcwd()
-    saver = AsyncSaver(hydra_dir, 'data', save_every=cfg['save_every'])
+    saver = AsyncSaver(hydra_dir, 'mock_data', save_every=cfg['save_every'])
     saver.start()
 
     for _ in trange(cfg['n_samples']):
