@@ -85,7 +85,7 @@ Tools:
   * Abstracts away unimportant training logic
   * Easily scale to multi-gpu, cluster-scale training
 * [Weights and Biases](https://wandb.ai/)
-  * Much more customizable than TB
+  * Much more customizable than TensorBoard
   * Offloads logging to the cloud
   * Logs shared by multiple machines / users
 
