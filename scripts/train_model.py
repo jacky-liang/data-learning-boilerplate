@@ -14,7 +14,6 @@ from data_learning_boilerplate.utils import set_seed
 
 @hydra.main(config_path='../cfg', config_name='train_model.yaml')
 def main(cfg):
-    ds = MockDataset(Path(cfg['root_dir']), cfg['data'])
     set_seed(cfg['seed'], torch=True)
 
     wandb_logger = WandbLogger(name=cfg['tag'], config=cfg['train'], **cfg['wandb']['logger'])
