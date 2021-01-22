@@ -47,7 +47,6 @@ class MlpModel(LightningModule):
 
     def forward(self, x):
         y_hat = self._mlp(x)
-
         return {
             'y_hat': y_hat
         }
