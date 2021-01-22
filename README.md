@@ -17,7 +17,7 @@ I've been using these tools personally in many applications/projects and have di
 The generated data is a simple linear function with Gaussian noise.
 We'll train an MLP to fit this data in the next section.
 
-This script uses Hydra to parse the config and generate the folder structure for data saving and logging, and it uses AsyncSavers to save data shards in a separate process.
+This script uses [Hydra](https://hydra.cc/) to parse the config and generate the folder structure for data saving and logging, and it uses [AsyncSavers](https://github.com/jacky-liang/async_savers) to save data shards in a separate process.
 The `save_every` in the cfg is set to `100`, and `n_samples` is set to `1000` - this means `10` shards will be saved.
 
 The `tag` field gives a non-unique identifier for the data generation run.
@@ -27,14 +27,14 @@ The `tag` field gives a non-unique identifier for the data generation run.
 ### Deep Learning
 
 1. Modify `root_dir` in `cfg/train_model.yaml` appropriately.
-2. Modify `wandb.logger.{entity, project, group}` with your Weights and Biases account/project details.
+2. Modify `wandb.logger.{entity, project, group}` with your [Weights and Biases](https://wandb.ai/) account/project details.
 3. Run `python scripts/train_model.py` to train the MLP to fit the generated data.
 
-This script uses Hydra to parse configs and generate local logging folder, PyTorch Lightning for training, and Weights and Biases for logging and uploading the trained model.
+This script uses [Hydra](https://hydra.cc/) to parse configs and generate local logging folder, [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) for training, and [Weights and Biases](https://wandb.ai/) for logging and uploading the trained model.
 
-See `data_learning_boilerplate/data.py` for an example of how to load the shards saved by AsyncSavers.
+See `data_learning_boilerplate/data.py` for an example of how to load the shards saved by [AsyncSavers](https://github.com/jacky-liang/async_savers).
 
-See `data_learning_boilerplate/model.py` for an implementation of PytorhcLightning module.
+See `data_learning_boilerplate/model.py` for an implementation of [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) module.
 
 ## Background
 
@@ -54,7 +54,7 @@ Solutions:
 
 Tools:
 * [AsyncSavers](https://github.com/jacky-liang/async_savers) - for 1, 2
-* [Hydra Configs](https://hydra.cc/) - for 3
+* [Hydra](https://hydra.cc/) - for 3
 
 ### Deep Learning
 
@@ -77,7 +77,7 @@ Tools:
 * [AsyncSavers](https://github.com/jacky-liang/async_savers)
   * Save data in shards
   * Save data in parallel process
-* [Hydra Configs](https://hydra.cc/)
+* [Hydra](https://hydra.cc/)
   * Composible configs
   * Output directory management
   * Override YAML config via command line
