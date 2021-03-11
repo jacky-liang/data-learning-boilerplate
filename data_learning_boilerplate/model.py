@@ -1,49 +1,28 @@
-from collections import OrderedDict
-
-import numpy as np
 import torch
-import torch.nn as nn
+
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from pytorch_lightning import LightningModule
-import wandb
 
-
-def _make_mlp(in_size, layer_sizes, act='relu', last_act=True, dropout=0, prefix=''):
-    if act =='tanh':
-        act_f = nn.Tanh()
-    elif act == 'relu':
-        act_f = nn.ReLU(inplace=True)
-    elif act == 'leakyrelu':
-        act_f = nn.LeakyReLU(inplace=True)
-    else:
-        raise ValueError(f'Unknown act: {act}')
-
-    layers = []
-    for i, layer_size in enumerate(layer_sizes):
-        layers.append((f'{prefix}_linear{i}', nn.Linear(in_size, layer_size)))
-        if i < len(layer_sizes) - 1:
-            if dropout > 0:
-                layers.append((f'{prefix}_dropout{i}', nn.Dropout(dropout)))
-            layers.append((f'{prefix}_{act}{i}', act_f))
-        else:
-            if last_act:
-                layers.append((f'{prefix}_{act}{i}', act_f))
-        in_size = layer_size
-    return nn.Sequential(OrderedDict(layers))
+from .utils import make_mlp
 
 
 class MlpModel(LightningModule):
 
-    def __init__(self, cfg, ds=None):
+    def __init__(self, cfg_dict, ds_gen=None):
         super().__init__()
 
-        # Parse data 
-        self._cfg = cfg
-        if ds is not None:
-            self._ds = ds
+        self._ds_gen = ds_gen
+        self.save_hyperparameters(cfg_dict)
 
-        self._mlp = _make_mlp(cfg['x_dim'], cfg['hidden_layers'] + [cfg['y_dim']], last_act=False)
+        self._mlp = make_mlp(
+            self.hparams.x_dim, self.hparams.hidden_layers + [self.hparams.y_dim], 
+            last_act=False
+        )
+
+    @property
+    def ds(self):
+        return self._ds_gen()
 
     def forward(self, x):
         y_hat = self._mlp(x)
@@ -68,13 +47,13 @@ class MlpModel(LightningModule):
         return {'loss': criterion_outs['loss']}
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self._cfg['lr'])
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
 
     def train_dataloader(self):
-        return DataLoader(self._ds, batch_size=self._cfg['batch_size'], sampler=SubsetRandomSampler(self._ds.train_idxs))
+        return DataLoader(self.ds, batch_size=self.hparams.batch_size, sampler=SubsetRandomSampler(self.ds.train_idxs))
 
     def val_dataloader(self):
-        return DataLoader(self._ds, batch_size=self._cfg['batch_size'], sampler=SubsetRandomSampler(self._ds.test_idxs))
+        return DataLoader(self.ds, batch_size=self.hparams.batch_size, sampler=SubsetRandomSampler(self.ds.test_idxs))
 
     def validation_step(self, batch, batch_idx):
         outs = self.forward(batch['x'])
@@ -87,3 +66,8 @@ class MlpModel(LightningModule):
                 vs = [outputs[k] for outputs in all_outputs]
                 mean_v = torch.mean(torch.stack(vs))
                 self.log(f'val/{k}', mean_v)
+
+                if k == 'loss':
+                    # To get around this problem:
+                    # https://github.com/PyTorchLightning/pytorch-lightning/issues/4012
+                    self.log(f'val_{k}', mean_v)
