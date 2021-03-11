@@ -21,7 +21,7 @@ def main(cfg):
 
     # Make logger 
     wandb_logger = WandbLogger(name=cfg['tag'], config=cfg['train'], **cfg['wandb']['logger'])
-    _ = wandb_logger.experiment # to explicitly trigger wandb init
+    wandb_logger.experiment # hack to explicitly trigger wandb init
 
     # Make callbacks
     wandb_upload_callback = WandbUploadCallback(
@@ -55,9 +55,12 @@ def main(cfg):
     )
 
     ds = MockDataset(Path(cfg['root_dir']), cfg['data'])
-    ds_gen = lambda : ds
-    model = MlpModel(cfg['train'], ds_gen=ds_gen)
-    trainer.fit(model)
+    model = MlpModel(cfg['train'])
+    trainer.fit(
+        model,
+        train_dataloader=ds.get_train_dataloader(model.hparams.batch_size),
+        val_dataloaders=ds.get_val_dataloader(model.hparams.batch_size)
+    )
 
 
 if __name__ == '__main__':

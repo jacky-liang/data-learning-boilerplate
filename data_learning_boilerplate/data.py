@@ -1,30 +1,17 @@
-from pathlib import Path
 import numpy as np
-
-import torch
-from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
-from async_savers import load_shards
+import torch
+from torch.utils.data import Dataset, DataLoader, SubsetRandomSampler
 
-
-def _load_datas_from_cfg(data_dir, tags):
-    datas = []
-    for tag in tags:
-        tag_path = data_dir / tag
-        all_data_paths = list(filter(lambda p : p.is_dir(), list(tag_path.iterdir())))
-        all_data_paths.sort()
-        latest_data_path = all_data_paths[-1]
-        datas.extend(load_shards(latest_data_path / 'mock_data'))
-
-    return datas
+from .utils import load_datas_from_cfg
 
 
 class MockDataset(Dataset):
 
     def __init__(self, root_dir, cfg):
         data_dir = root_dir / cfg['rel_data_dir']
-        datas = _load_datas_from_cfg(data_dir, cfg['tags'])
+        datas = load_datas_from_cfg(data_dir, cfg['tags'])
 
         X = np.array([d['x'] for d in datas])
         Y = np.array([d['y'] for d in datas])
@@ -45,6 +32,12 @@ class MockDataset(Dataset):
     @property
     def test_idxs(self):
         return self._test_idxs.copy()
+
+    def get_train_dataloader(self, batch_size):
+        return DataLoader(self, batch_size=batch_size, sampler=SubsetRandomSampler(self.train_idxs))
+
+    def get_val_dataloader(self, batch_size):
+        return DataLoader(self, batch_size=batch_size, sampler=SubsetRandomSampler(self.test_idxs))
 
     def __len__(self):
         return self._len

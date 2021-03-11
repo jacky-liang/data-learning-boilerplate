@@ -4,6 +4,7 @@ import numpy as np
 import random
 
 import torch.nn as nn
+from async_savers import load_shards
 
 
 def set_seed(seed, torch=False):
@@ -14,6 +15,18 @@ def set_seed(seed, torch=False):
     if torch:
         import torch
         torch.manual_seed(seed)
+
+
+def load_datas_from_cfg(data_dir, tags):
+    datas = []
+    for tag in tags:
+        tag_path = data_dir / tag
+        all_data_paths = list(filter(lambda p : p.is_dir(), list(tag_path.iterdir())))
+        all_data_paths.sort()
+        latest_data_path = all_data_paths[-1]
+        datas.extend(load_shards(latest_data_path / 'mock_data'))
+
+    return datas
 
 
 def make_mlp(in_size, layer_sizes, act='relu', last_act=True, dropout=0, prefix=''):

@@ -1,7 +1,6 @@
 import torch
 
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, SubsetRandomSampler
 from pytorch_lightning import LightningModule
 
 from .utils import make_mlp
@@ -9,20 +8,15 @@ from .utils import make_mlp
 
 class MlpModel(LightningModule):
 
-    def __init__(self, cfg_dict, ds_gen=None):
+    def __init__(self, cfg_dict):
         super().__init__()
 
-        self._ds_gen = ds_gen
         self.save_hyperparameters(cfg_dict)
 
         self._mlp = make_mlp(
             self.hparams.x_dim, self.hparams.hidden_layers + [self.hparams.y_dim], 
             last_act=False
         )
-
-    @property
-    def ds(self):
-        return self._ds_gen()
 
     def forward(self, x):
         y_hat = self._mlp(x)
@@ -48,12 +42,6 @@ class MlpModel(LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
-
-    def train_dataloader(self):
-        return DataLoader(self.ds, batch_size=self.hparams.batch_size, sampler=SubsetRandomSampler(self.ds.train_idxs))
-
-    def val_dataloader(self):
-        return DataLoader(self.ds, batch_size=self.hparams.batch_size, sampler=SubsetRandomSampler(self.ds.test_idxs))
 
     def validation_step(self, batch, batch_idx):
         outs = self.forward(batch['x'])
